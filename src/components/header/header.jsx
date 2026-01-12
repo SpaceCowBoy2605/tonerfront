@@ -12,7 +12,7 @@ export const Header = () => {
             <ul className="nav nav-pills"> 
                 <li className="nav-item"><Link to="/" className="nav-link active" aria-current="page">Inicio</Link></li>
                 <li className="nav-item"><Link to="/features" className="nav-link">Toners</Link></li>
-                <li className="nav-item"><Link to="/pricing" className="nav-link">Impresoras</Link></li>
+                <li className="nav-item"><Link to="/impresoras" className="nav-link">Impresoras</Link></li>
                 <li className="nav-item"><Link to="/faqs" className="nav-link">FAQs</Link></li>
                 <li className="nav-item"><Link to="/about" className="nav-link">About</Link></li>
             </ul> 
