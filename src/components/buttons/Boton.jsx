@@ -2,7 +2,7 @@ import React from "react";
 
 export const Boton = () => {
   return (
-    <button type="button" className="btn btn-danger">Actualizar informacion</button>
+<button type="button" class="btn btn-outline-success">Aceptar</button>
   );
 }
 
