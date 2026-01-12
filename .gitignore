@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Ignorar imágenes por defecto
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
+*.bmp
+*.tiff
+*.tif
+*.avif
+*.heic
+
+# Conservar imágenes necesarias para la app
+!src/assets/**
+!public/**
+
