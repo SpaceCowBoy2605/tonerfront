@@ -3,7 +3,7 @@ import '../App.css'
 import Boton from '../components/buttons/Boton.jsx'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
 import BotonEditar from '../components/buttons/BotonEditar.jsx'
-
+import hp107 from '../assets/hp107.avif';
 
 export default function Impresoras() {
 
@@ -27,6 +27,7 @@ export default function Impresoras() {
                 <div key={impresora.id} className="col-sm-6 mb-3 mb-sm-0">
                     <div className="card">
                         <div className="card-body">
+                            <img src={hp107} alt="Impresora" className="card-img-top" />
                             <h5 className="card-title">{impresora.nombreImpresora}</h5>
                             <p className="card-text">{impresora.modelo}</p>
                         <BotonEditar />

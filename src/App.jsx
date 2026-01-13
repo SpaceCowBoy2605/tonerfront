@@ -4,6 +4,7 @@ import Header from './components/header/header.jsx'
 import Home from './pages/Home'
 import About from './pages/About'
 import Impresoras from './pages/Impresora.jsx'
+import Toners from './pages/Toners.jsx'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/impresoras" element={<Impresoras />} />
+          <Route path="/toners" element={<Toners />} />
         </Routes>
       </main>
       <About />

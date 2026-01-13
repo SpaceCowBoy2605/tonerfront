@@ -39,6 +39,5 @@ dist-ssr
 *.heic
 
 # Conservar imágenes necesarias para la app
-!src/assets/**
-!public/**
+
 
