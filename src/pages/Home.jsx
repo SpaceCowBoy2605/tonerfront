@@ -6,6 +6,49 @@ import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
 export default function Home() {
     const [solicitudes, setSolicitudes] = useState([])
 
+    const getNombreAccesorio = (solicitud) => {
+        return solicitud?.accesorio?.nombreAccesorio ?? solicitud?.nombreAccesorio ?? ''
+    }
+
+    const getImpresoraLabel = (solicitud) => {
+        const nombre = solicitud?.impresora?.nombreImpresora ?? ''
+        const modelo = solicitud?.impresora?.modelo ?? ''
+        const etiqueta = [nombre, modelo].filter(Boolean).join(' ')
+        return etiqueta || (solicitud?.idImpresora ?? '')
+    }
+
+    const formatFecha = (valor) => {
+        if (!valor) return ''
+        const dt = new Date(valor)
+        return Number.isNaN(dt.getTime()) ? String(valor) : dt.toLocaleDateString('es-MX')
+    }
+
+    const getEstatusLabel = (solicitud) => {
+        return (
+            solicitud?.accesorio?.estatus?.estatus ??
+            solicitud?.impresora?.accesorio?.estatus?.estatus ??
+            solicitud?.estatus?.estatus ??
+            solicitud?.estatus ??
+            ''
+        )
+    }
+
+    const getEstatusClass = (estatus) => {
+        switch (estatus) {
+            case 'Sufuciente':
+                return { backgroundColor: '#dff1d5', color: '#155724' };
+            case 'Bajo':
+                return { backgroundColor: '#ffffff', color: '#dbd811' };
+            case 'Solicitar más':
+                return { backgroundColor: '#ffffff', color: '#b31111' };
+            case 'Reservado':
+                return { backgroundColor: '#ffffff', color: '#1411b3' };
+            default:
+                return undefined
+        }
+    }
+
+
     useEffect(() => {
         fetch('http://127.0.0.1:5000/api/solicitudes')
             .then(res => res.json())
@@ -19,9 +62,9 @@ export default function Home() {
     }, []);
 
     return (
-        <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
+        <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-3 rounded-2" tabIndex="0">
             <h2>Tabla de solicitudes</h2>
-            <div className='botones-container mb-3'>
+            <div className='container mb-4 p-3'>
                 <Boton />
                 <BotonCancelar />
             </div>
@@ -34,19 +77,24 @@ export default function Home() {
                         <th scope="col">Cantidad</th>
                         <th scope="col">Fecha</th>
                         <th scope="col">Centro de costos</th>
+                        <th scope="col">Estatus</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {solicitudes.map((solicitud) => (
-                        <tr key={solicitud.id}>
-                            <th scope="row">{solicitud?.id}</th>
-                            <td>{solicitud?.idAccesorio ?? ''}</td>
-                            <td>{solicitud?.idImpresora ?? ''}</td>
-                            <td>{solicitud?.cantidad ?? ''}</td>
-                            <td>{solicitud?.fechaSolicitud ?? ''}</td>
-                            <td>{solicitud?.centroCostos ?? ''}</td>
-                        </tr>
-                    ))}
+                    {solicitudes.map((solicitud) => {
+                        const estatusLabel = getEstatusLabel(solicitud)
+                        return (
+                            <tr key={solicitud.id}>
+                                <th scope="row">{solicitud?.id}</th>
+                                <td>{getNombreAccesorio(solicitud)}</td>
+                                <td>{getImpresoraLabel(solicitud)}</td>
+                                <td>{solicitud?.cantidad ?? ''}</td>
+                                <td>{formatFecha(solicitud?.fechaSolicitud)}</td>
+                                <td>{solicitud?.centroCostos ?? ''}</td>
+                                <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
         </div>
