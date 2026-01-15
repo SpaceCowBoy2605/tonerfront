@@ -5,6 +5,8 @@ import Home from './pages/Home'
 import About from './pages/About'
 import Impresoras from './pages/Impresora.jsx'
 import Toners from './pages/Toners.jsx'
+import TablaToners from './pages/TablaToners.jsx'
+import ActualizarToners from './pages/ActualizarToners.jsx'
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/impresoras" element={<Impresoras />} />
           <Route path="/toners" element={<Toners />} />
+          <Route path="/tabla-toners" element={<TablaToners />} />
+          <Route path="/actualizar-toners" element={<ActualizarToners />} />
         </Routes>
       </main>
       <About />

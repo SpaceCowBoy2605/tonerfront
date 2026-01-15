@@ -1,0 +1,22 @@
+.column{
+    margin: 1rem;
+    text-align: center;
+
+}
+
+.form-group{
+    margin-top:1rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    width: 40%;
+}
+
+.btn-primary{
+    padding: 1rem;
+}
+
+.button-group{
+    text-align: left;
+        display: flex;
+    column-gap: 1rem;
+}
