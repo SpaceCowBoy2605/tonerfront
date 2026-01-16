@@ -33,22 +33,6 @@ export default function Home() {
         )
     }
 
-    const getEstatusClass = (estatus) => {
-        switch (estatus) {
-            case 'Sufuciente':
-                return { backgroundColor: '#dff1d5', color: '#155724' };
-            case 'Bajo':
-                return { backgroundColor: '#ffffff', color: '#dbd811' };
-            case 'Solicitar más':
-                return { backgroundColor: '#ffffff', color: '#b31111' };
-            case 'Reservado':
-                return { backgroundColor: '#ffffff', color: '#1411b3' };
-            default:
-                return undefined
-        }
-    }
-
-
     useEffect(() => {
         fetch('http://127.0.0.1:5000/api/solicitudes')
             .then(res => res.json())
@@ -68,35 +52,37 @@ export default function Home() {
                 <Boton />
                 <BotonCancelar />
             </div>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th id="scrollspyHeading2" scope="col">Id de orden</th>
-                        <th scope="col">Accesorio solicitado</th>
-                        <th scope="col">Impresora compatible</th>
-                        <th scope="col">Cantidad</th>
-                        <th scope="col">Fecha</th>
-                        <th scope="col">Centro de costos</th>
-                        <th scope="col">Estatus</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {solicitudes.map((solicitud) => {
-                        const estatusLabel = getEstatusLabel(solicitud)
-                        return (
-                            <tr key={solicitud.id}>
-                                <th scope="row">{solicitud?.id}</th>
-                                <td>{getNombreAccesorio(solicitud)}</td>
-                                <td>{getImpresoraLabel(solicitud)}</td>
-                                <td>{solicitud?.cantidad ?? ''}</td>
-                                <td>{formatFecha(solicitud?.fechaSolicitud)}</td>
-                                <td>{solicitud?.centroCostos ?? ''}</td>
-                                <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
+            <div className="table-scroll">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th id="scrollspyHeading2" scope="col">Id de orden</th>
+                            <th scope="col">Accesorio solicitado</th>
+                            <th scope="col">Impresora compatible</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Centro de costos</th>
+                            {/* <th scope="col">Estatus</th> */}
+                        </tr>
+                    </thead>
+                    <tbody className='cuerpoT'>
+                        {solicitudes.map((solicitud) => {
+                            const estatusLabel = getEstatusLabel(solicitud)
+                            return (
+                                <tr key={solicitud.id}>
+                                    <th scope="row">{solicitud?.id}</th>
+                                    <td>{getNombreAccesorio(solicitud)}</td>
+                                    <td>{getImpresoraLabel(solicitud)}</td>
+                                    <td>{solicitud?.cantidad ?? ''}</td>
+                                    <td>{formatFecha(solicitud?.fechaSolicitud)}</td>
+                                    <td>{solicitud?.centroCostos ?? ''}</td>
+                                    {/* <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td> */}
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }

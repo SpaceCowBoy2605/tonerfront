@@ -1,22 +1,12 @@
+
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import '../App.css'
+import Nav from '../components/navs/navsToner.jsx'
 
 export default function ActualizarToners() {
 
     return (
-        <div>
-            <ul className="nav nav-tabs" id="myTab" role="tablist">
-                <li className="nav-item">
-                    <Link to="/toners" className="nav-link">Toners</Link>
-                </li>
-                <li className="nav-item">
-                   <Link to="/tabla-toners" className="nav-link">Tabla de Toners</Link>
-                </li>
-                <li className="nav-item">
-                    <Link to="/actualizar-toners" className="nav-link">Actualizar Toners</Link>
-                </li>
-            </ul>
+        <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-3 rounded-2" tabIndex="0">
+            <Nav />
             <h2>Actualizar Toners</h2>
         </div>        
     );
