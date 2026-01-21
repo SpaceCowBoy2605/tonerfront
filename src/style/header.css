@@ -1,0 +1,7 @@
+
+@media (max-width: 600px) {
+    .nav.nav-pills {
+        background-color: blue;
+    }
+
+}
