@@ -5,6 +5,7 @@ body,
   min-height: 100%;
   margin: 0;
   /* padding: 0; */
+
 }
 
 body {
@@ -12,4 +13,5 @@ body {
   display: block;
   min-width: 320px;
   min-height: 100vh;
+  
 }

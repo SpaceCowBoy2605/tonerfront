@@ -2,6 +2,7 @@
   /* max-width: 1280px; */
   margin:  auto;
   text-align: center;
+  
 }
 
 .table-scroll {
@@ -15,6 +16,7 @@
   top: 0;
   background: var(--bs-body-bg, #fff);
   z-index: 3;
+
 }
 
 .cuerpoT  {

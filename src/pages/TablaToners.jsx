@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import Nav from '../components/navs/navsToner.jsx'
 import '../style/tablatoner.css'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
+import Boton from '../components/buttons/Boton.jsx' 
+import BotonActualizar from '../components/buttons/BotonEditar.jsx'
 
 export default function TablaToners() {
 
@@ -20,7 +22,7 @@ export default function TablaToners() {
     const getEstatusClass = (estatus) => {
         switch (estatus) {
             case 'Sufuciente':
-                return { backgroundColor: '#56d651', color: '#000000' };
+                return { backgroundColor: '#0F4D0F', color: '#13701b' };
             case 'Bajo':
                 return { backgroundColor: '#ecec0e', color: '#020202' };
             case 'Solcitar mas':
@@ -71,7 +73,7 @@ export default function TablaToners() {
                                     <td>{accesorio.cantidad}</td>
                                     <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
                                     <td>
-                                        <BotonCancelar />
+                                        <BotonActualizar />
                                     </td>
                                 </tr>
                             )

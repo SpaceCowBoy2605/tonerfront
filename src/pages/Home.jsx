@@ -48,9 +48,13 @@ export default function Home() {
     return (
         <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -30%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-0 rounded-0" tabIndex="0">
             <h2>Tabla de solicitudes</h2>
-            <div className='container p-3'>
-                <Boton />
-                <BotonCancelar />
+            <div className='row mb-3'>
+                <div className="col-sm-2">
+                    <Boton />
+                </div>
+                <div className="col-sm-2">
+                    <BotonCancelar />
+                </div>
             </div>
             <div className="table-scroll">
                 <table className="table">

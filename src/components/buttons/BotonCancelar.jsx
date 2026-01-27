@@ -1,8 +1,14 @@
 import React from "react";
 
-export const BotonCancelar = () => {
+export default function BotonCancelar({
+  type = "button",
+  className = "",
+  children = "Cancelar",
+  ...props
+}) {
   return (
-    <button type="button" className="btn btn-outline-danger">Cancelar</button>  );
+    <button type={type} className={`btn btn-outline-danger ${className}`} {...props}>
+      {children}
+    </button>
+  );
 }
-
-export default BotonCancelar;
