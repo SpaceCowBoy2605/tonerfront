@@ -46,9 +46,9 @@ export default function Home() {
     }, []);
 
     return (
-        <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-3 rounded-2" tabIndex="0">
+        <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -30%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-0 rounded-0" tabIndex="0">
             <h2>Tabla de solicitudes</h2>
-            <div className='container mb-4 p-3'>
+            <div className='container p-3'>
                 <Boton />
                 <BotonCancelar />
             </div>

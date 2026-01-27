@@ -1,7 +1,53 @@
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid #456789;
+  border-radius: 0.6rem;
+  /* padding: 0.45rem 0.6rem; */
+}
 
-@media (max-width: 600px) {
-    .nav.nav-pills {
-        background-color: blue;
-    }
+.hamburger-icon {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #456789;
+}
 
+.hamburger-icon::before,
+.hamburger-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 2px;
+  background: #456789;
+}
+
+@media (max-width: 510px) {
+  .hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .nav.nav-pills {
+    display: none;              /* oculto */
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    /* padding: 10px 20px; */
+    border-bottom: 2px solid #456789;
+    font-variant: small-caps;
+    border-radius: 1rem;
+  }
+
+  .nav.nav-pills.is-open {
+    display: flex;              
+  }
+
+  .nav.nav-pills .nav-link {
+    width: 100%;
+  }
 }

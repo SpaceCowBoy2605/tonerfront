@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Nav from '../components/navs/navsToner.jsx'
 import '../style/tablatoner.css'
+import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
 
 export default function TablaToners() {
 
@@ -57,6 +58,7 @@ export default function TablaToners() {
                             <th scope="col">Nombre</th>
                             <th scope="col">Cantidad</th>
                             <th scope="col">Estatus</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +70,9 @@ export default function TablaToners() {
                                     <td>{accesorio.nombreAccesorio}</td>
                                     <td>{accesorio.cantidad}</td>
                                     <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
+                                    <td>
+                                        <BotonCancelar />
+                                    </td>
                                 </tr>
                             )
                         })}

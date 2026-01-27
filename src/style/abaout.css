@@ -1,0 +1,12 @@
+.background{
+    background-color: #1b232a;
+    /* border-radius: 1rem; */
+    max-width: 107%;
+}
+
+.background p{
+    color: white;
+}
+.background h4{
+    color: white;
+}

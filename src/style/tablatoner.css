@@ -1,4 +1,6 @@
-#root {
+
+
+.tabla-toners-root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 1rem;
@@ -9,5 +11,4 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  padding: 1rem;
 }
