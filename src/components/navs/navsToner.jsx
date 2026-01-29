@@ -13,7 +13,8 @@ export const Header = () => {
                 <Link to="/tabla-toners" className="nav-link">Tabla de Toners</Link>
             </li>
             <li className="nav-item">
-                <Link to="/actualizar-toners" className="nav-link">Actualizar Toners</Link>                </li>
+                <Link to="/actualizar-toners" className="nav-link">Actualizar Toners</Link>
+            </li>
         </ul>
 
     );

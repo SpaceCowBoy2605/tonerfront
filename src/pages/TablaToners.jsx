@@ -4,6 +4,7 @@ import '../style/tablatoner.css'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
 import Boton from '../components/buttons/Boton.jsx' 
 import BotonActualizar from '../components/buttons/BotonEditar.jsx'
+import BotonQR from '../components/buttons/BotonQR.jsx'
 
 export default function TablaToners() {
 
@@ -72,8 +73,9 @@ export default function TablaToners() {
                                     <td>{accesorio.nombreAccesorio}</td>
                                     <td>{accesorio.cantidad}</td>
                                     <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
-                                    <td>
-                                        <BotonActualizar />
+                                    <td>    
+                                        <BotonActualizar />                        
+                                        <BotonQR accesorio={accesorio} />
                                     </td>
                                 </tr>
                             )
