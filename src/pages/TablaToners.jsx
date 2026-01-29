@@ -23,7 +23,7 @@ export default function TablaToners() {
     const getEstatusClass = (estatus) => {
         switch (estatus) {
             case 'Sufuciente':
-                return { backgroundColor: '#0F4D0F', color: '#13701b' };
+                return { backgroundColor: '#0bb70b', color: '#ffffff' };
             case 'Bajo':
                 return { backgroundColor: '#ecec0e', color: '#020202' };
             case 'Solcitar mas':

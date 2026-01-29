@@ -87,7 +87,7 @@ export const BotonQR = ({ accesorio }) => {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                             <div style={{ fontWeight: 700 }}>{title}</div>
                             <button type="button" className="btn btn-danger" onClick={() => setOpen(false)}>
-                                Cerrar
+                                X
                             </button>
                         </div>
                         <div style={{ display: "grid", placeItems: "center", padding: "14px 0" }}>
