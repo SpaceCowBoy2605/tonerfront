@@ -15,7 +15,7 @@ export default function Toners() {
         return `${API_BASE_URL}${path}`;
     };
 
-        const handleDownloadQr = async () => {
+    const handleDownloadQr = async () => {
                 if (!ultimoCreado?.qr_url) return;
                 const url = resolveQrUrl(ultimoCreado.qr_url);
                 const safeName = String(ultimoCreado.nombreAccesorio || "accesorio")
@@ -42,7 +42,7 @@ export default function Toners() {
                         // Fallback: abre la imagen en otra pestaña (el usuario puede guardar desde ahí)
                         window.open(url, "_blank", "noopener,noreferrer");
                 }
-        };
+    };
 
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
@@ -167,13 +167,6 @@ export default function Toners() {
                                 <h2>Agrega toners</h2>
                                 <label>Nombre accesorio</label>
                                 <input name="nombreAccesorio" type="text" className="form-control" required/>
-                                {/*mover esto a la parte de actualizar para seleccionar los existentes */}
-                                {/* <select name="nombreAccesorio" className="form-control" required >
-                                    <option value="">Seleccione un accesorio</option>
-                                    {accesorios.map((accesorio) => (
-                                        <option key={accesorio.id} value={accesorio.nombreAccesorio}>{accesorio.nombreAccesorio}</option>
-                                    ))}
-                                </select> */}
                             </div>
                             <div className="form-group">
                                 <label>Cantidad</label>

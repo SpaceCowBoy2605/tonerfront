@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom';
 import Nav from '../components/navs/navsToner.jsx'
 import '../style/tablatoner.css'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
@@ -74,7 +75,9 @@ export default function TablaToners() {
                                     <td>{accesorio.cantidad}</td>
                                     <td style={getEstatusClass(estatusLabel)}>{estatusLabel}</td>
                                     <td>    
-                                        <BotonActualizar />                        
+                                        <Link to={`/actualizar-toners/`}>
+                                            <BotonActualizar />
+                                        </Link>                        
                                         <BotonQR accesorio={accesorio} />
                                     </td>
                                 </tr>
