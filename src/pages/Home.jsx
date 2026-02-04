@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import '../App.css'
 import Boton from '../components/buttons/Boton.jsx'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
+import BotonSolicitud from '../components/buttons/BotonSolicitud.jsx'
 
 export default function Home() {
     const [solicitudes, setSolicitudes] = useState([])
@@ -50,7 +51,7 @@ export default function Home() {
             <h2>Tabla de solicitudes</h2>
             <div className='row mb-3'>
                 <div className="col-sm-2">
-                    <Boton />
+                    <BotonSolicitud />
                 </div>
                 <div className="col-sm-2">
                     <BotonCancelar />
