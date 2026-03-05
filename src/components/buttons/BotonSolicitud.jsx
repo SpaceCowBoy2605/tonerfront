@@ -11,8 +11,16 @@ export const BotonSolicitud = () => {
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [accesorios, setAccesorios] = useState([])
+    const [plantas, setPlantas] = useState([])
+    const [resu, setResu] = useState([])
+    const [tep, setTep] = useState([])
+    const [cedis, setCedis] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [selectedAccesorioId, setSelectedAccesorioId] = useState("");
+    const [selectedPlantaId, setSelectedPlantaId] = useState("");
+    const [selectedResuId, setSelectedResuId] = useState("");
+    const [selectedTepId, setSelectedTepId] = useState("");
+    const [selectedCedisId, setSelectedCedisId] = useState("");
     const [form, setForm] = useState({
         destinoTipo: "",
         destinoId: "",
@@ -48,16 +56,70 @@ export const BotonSolicitud = () => {
             .catch(() => setAccesorios([]))
     }, [API_BASE_URL]);
 
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/planta`)
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.plantas ?? data?.planta ?? []);
+                setPlantas(lista);
+            })
+            .catch(() => setPlantas([]))
+    }, [API_BASE_URL]);
+
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/resu`)
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.resus ?? data?.resu ?? []);
+                setResu(lista);
+            })
+            .catch(() => setResu([]))
+    }, [API_BASE_URL]);
+
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/tep`)
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.teps ?? data?.tep ?? []);
+                setTep(lista);
+            })
+            .catch(() => setTep([]))
+    }, [API_BASE_URL]);
+
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/cedis`)
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.cedis ?? data?.cedi ?? []);
+                setCedis(lista);
+            })
+            .catch(() => setCedis([]))
+    }, [API_BASE_URL]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const accesorioSeleccionado = accesorios.find((a) => String(a?.id) === String(selectedAccesorioId));
+        const plantaSeleccionada = plantas.find((p) => String(p?.id) === String(selectedPlantaId));
+        const resuSeleccionada = resu.find((r) => String(r?.id) === String(selectedResuId));
         const destinoIdNum = form.destinoId !== "" ? Number(form.destinoId) : null;
 
         const payload = {
             // toner / accesorio
             accesorioId: selectedAccesorioId !== "" ? Number(selectedAccesorioId) : null,
+            plantaId: selectedPlantaId !== "" ? Number(selectedPlantaId) : null,
+            resuId: selectedResuId !== "" ? Number(selectedResuId) : null,
             nombreAccesorio: accesorioSeleccionado?.nombreAccesorio ?? "",
+            nombrePlanta: plantaSeleccionada?.nombrePlanta ?? "",
+            nombreResu: resuSeleccionada?.nombreResu ?? "",
 
             // datos de solicitud
             cantidad: Number(form.cantidad || 0),
@@ -175,7 +237,7 @@ export const BotonSolicitud = () => {
                                 </select>
                             </div>
                             <div className="mb-3">
-                                <label className="form-label">Toner</label>
+                                <label>Nombre accesorio</label>
                                 <select
                                     name="accesorioId"
                                     className="form-control"
@@ -191,6 +253,38 @@ export const BotonSolicitud = () => {
                                         <option key={accesorio.id} value={String(accesorio.id)}>{accesorio.nombreAccesorio}</option>
                                     ))}
                                 </select>
+                                {/* Enviamos también el nombre (como pide tu ejemplo del backend) */}
+                                <input
+                                    type="hidden"
+                                    name="nombreAccesorio"
+                                    value={selectedAccesorioId ? (accesorios.find((a) => String(a?.id) === String(selectedAccesorioId))?.nombreAccesorio ?? "") : ""}
+                                    readOnly
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label>Planta</label>
+                                <select
+                                    name="plantaId"
+                                    className="form-control"
+                                    required
+                                    value={selectedPlantaId}
+                                    onChange={(e) => {
+                                        const id = e.target.value;
+                                        setSelectedPlantaId(id);
+                                    }}
+                                >
+                                    <option value="">Seleccione una planta</option>
+                                    {plantas.map((planta) => (
+                                        <option key={planta.id} value={String(planta.id)}>{planta.nombrePlanta}</option>
+                                    ))}
+                                </select>
+                                {/* Enviamos también el nombre (como pide tu ejemplo del backend) */}
+                                <input
+                                    type="hidden"
+                                    name="nombrePlanta"
+                                    value={selectedPlantaId ? (plantas.find((p) => String(p?.id) === String(selectedPlantaId))?.nombrePlanta ?? "") : ""}
+                                    readOnly
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Cantidad</label>
