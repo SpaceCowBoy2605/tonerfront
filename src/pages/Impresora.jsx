@@ -4,6 +4,7 @@ import Boton from '../components/buttons/Boton.jsx'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
 import BotonEditar from '../components/buttons/BotonEditar.jsx'
 import { Imagenesimpresora } from '../components/imagenes/Imagenes.js'
+import NavImpresora from '../components/navs/navsImpresoras.jsx'
 
 export default function Impresoras() {
 
@@ -49,6 +50,7 @@ export default function Impresoras() {
     return (
         <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-3 rounded-2" tabIndex="0">
             <div className="row">
+                <NavImpresora />
                 {impresoras.map((impresora) => (
                     <div key={impresora.id} className="col-sm-6 mb-3 mb-sm-0">
                         <div className="card">
@@ -57,7 +59,7 @@ export default function Impresoras() {
                                     <img src={getimagenImpresora(impresora?.modelo)} alt="Impresora" className="card-img-top" />
                                 ) : null}
                                 <h5 className="card-title">{impresora.nombreImpresora}</h5>
-                                <p className="card-text">{impresora.modelo}</p>
+                                <p className="card-text">{impresora.modelo}</p> 
                                 <BotonEditar />
                             </div>
                         </div>

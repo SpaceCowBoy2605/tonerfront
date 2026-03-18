@@ -28,11 +28,3 @@ function App() {
 }
 
 export default App
-
-
-{/* <tr>
-              {accesorios.map((accesorio) => (
-                <th key={accesorio.id}>
-                  {accesorio.id}
-                </th>
-              ))} */}

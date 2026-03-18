@@ -15,6 +15,7 @@ export const BotonSolicitud = () => {
     const [resu, setResu] = useState([])
     const [tep, setTep] = useState([])
     const [cedis, setCedis] = useState([])
+    const [impresoras, setImpresoras] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [selectedAccesorioId, setSelectedAccesorioId] = useState("");
     const [selectedPlantaId, setSelectedPlantaId] = useState("");
@@ -41,8 +42,39 @@ export const BotonSolicitud = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        // Si cambia el tipo de destino, limpiamos el id seleccionado para evitar inconsistencias.
+        if (name === "destinoTipo") {
+            setForm((prev) => ({ ...prev, destinoTipo: value, destinoId: "" }));
+            return;
+        }
         setForm((prev) => ({ ...prev, [name]: value }));
     };
+
+    const destinoOptions = useMemo(() => {
+        switch (form.destinoTipo) {
+            case "planta":
+                return (plantas || [])
+                    .map((p) => ({ id: p?.id, label: p?.nombrePlanta ?? p?.nombre ?? "" }))
+                    .filter((opt) => opt.id !== undefined && opt.id !== null);
+            case "resu":
+                return (resu || [])
+                    .map((r) => ({
+                        id: r?.id,
+                        label: r?.nombreResurreccion ?? r?.nombreResu ?? r?.nombre ?? "",
+                    }))
+                    .filter((opt) => opt.id !== undefined && opt.id !== null);
+            case "cedis":
+                return (cedis || [])
+                    .map((c) => ({ id: c?.id, label: c?.nombreCedis ?? c?.nombre ?? "" }))
+                    .filter((opt) => opt.id !== undefined && opt.id !== null);
+            case "tep":
+                return (tep || [])
+                    .map((t) => ({ id: t?.id, label: t?.nombreTep ?? t?.nombre ?? "" }))
+                    .filter((opt) => opt.id !== undefined && opt.id !== null);
+            default:
+                return [];
+        }
+    }, [cedis, form.destinoTipo, plantas, resu, tep]);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/api/accesorio`)
@@ -69,12 +101,12 @@ export const BotonSolicitud = () => {
     }, [API_BASE_URL]);
 
     useEffect(() => {
-        fetch(`${API_BASE_URL}/api/resu`)
-            .then(res => res.json())
+        fetch(`${API_BASE_URL}/api/resurreccion`)
+            .then(resus => resus.json())
             .then(data => {
                 const lista = Array.isArray(data)
                     ? data
-                    : (data?.resus ?? data?.resu ?? []);
+                    : (data?.resurrecciones ?? data?.resurreccion ?? []);
                 setResu(lista);
             })
             .catch(() => setResu([]))
@@ -104,27 +136,97 @@ export const BotonSolicitud = () => {
             .catch(() => setCedis([]))
     }, [API_BASE_URL]);
 
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/impresora`)
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.impresoras ?? data?.impresora ?? [])
+                setImpresoras(lista)
+            })
+            .catch(() => setImpresoras([]))
+    }, [API_BASE_URL])
+
+    const impresoraOptions = useMemo(() => {
+        return (impresoras || [])
+            .map((i) => {
+                const id = i?.id ?? i?.idImpresora ?? i?.impresoraId
+                const nombre = i?.nombreImpresora ?? i?.nombre ?? i?.marca ?? ""
+                const modelo = i?.modelo ?? i?.modeloImpresora ?? i?.model ?? ""
+                const label = [nombre, modelo].filter(Boolean).join(" ").trim()
+                return {
+                    id,
+                    label,
+                }
+            })
+            .filter((opt) => opt.id !== undefined && opt.id !== null)
+    }, [impresoras])
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const toErrorMessage = (rawBody) => {
+            if (!rawBody) return "Error desconocido";
+            if (typeof rawBody === "string") return rawBody;
+            return (
+                rawBody?.message ||
+                rawBody?.error ||
+                rawBody?.detail ||
+                rawBody?.msg ||
+                (rawBody?.errors ? JSON.stringify(rawBody.errors) : "") ||
+                JSON.stringify(rawBody)
+            );
+        };
+
         const accesorioSeleccionado = accesorios.find((a) => String(a?.id) === String(selectedAccesorioId));
         const plantaSeleccionada = plantas.find((p) => String(p?.id) === String(selectedPlantaId));
+        const tepSeleccionado = tep.find((t) => String(t?.id) === String(selectedTepId));
         const resuSeleccionada = resu.find((r) => String(r?.id) === String(selectedResuId));
         const destinoIdNum = form.destinoId !== "" ? Number(form.destinoId) : null;
 
+        const accesorioIdNum = selectedAccesorioId !== "" ? Number(selectedAccesorioId) : null;
+        const cantidadNum = Number(form.cantidad || 0);
+        const impresoraIdNum = String(form.impresora || "").trim() !== "" ? Number(form.impresora) : null;
+
+        if (!accesorioIdNum) {
+            setErrorMsg("Selecciona un accesorio");
+            return;
+        }
+
+        if (!Number.isFinite(cantidadNum) || cantidadNum < 1) {
+            setErrorMsg("La cantidad debe ser mayor a 0");
+            return;
+        }
+        
+
         const payload = {
             // toner / accesorio
-            accesorioId: selectedAccesorioId !== "" ? Number(selectedAccesorioId) : null,
+            // Compatibilidad backend: requiere idAccesorio (o idAcc)
+            idAccesorio: accesorioIdNum,
+            idAcc: accesorioIdNum,
+            // Mantener este campo por si otros endpoints lo usan
+            accesorioId: accesorioIdNum,
             plantaId: selectedPlantaId !== "" ? Number(selectedPlantaId) : null,
             resuId: selectedResuId !== "" ? Number(selectedResuId) : null,
+            tepId: selectedTepId !== "" ? Number(selectedTepId) : null,
+
             nombreAccesorio: accesorioSeleccionado?.nombreAccesorio ?? "",
             nombrePlanta: plantaSeleccionada?.nombrePlanta ?? "",
-            nombreResu: resuSeleccionada?.nombreResu ?? "",
+            // Soportar ambas variantes de nombre para evitar que llegue vacío por diferencia de API.
+            nombreResu: resuSeleccionada?.nombreResu ?? resuSeleccionada?.nombreResurreccion ?? "",
+            nombreResurreccion: resuSeleccionada?.nombreResurreccion ?? resuSeleccionada?.nombreResu ?? "",
+            nombreTep: tepSeleccionado?.nombreTep ?? "",
 
             // datos de solicitud
-            cantidad: Number(form.cantidad || 0),
+            // Compatibilidad backend: acepta cantidad y/o cantidadSolicitada
+            cantidad: cantidadNum,
+            cantidadSolicitada: cantidadNum,
             fechaSolicitud: String(form.fechaSolicitud || ""),
-            impresora: String(form.impresora || ""),
+            // Impresora como ID numérico (evitar que llegue como string)
+            impresora: impresoraIdNum,
+            idImpresora: impresoraIdNum,
+            impresoraId: impresoraIdNum,
 
             // destino (solo uno de estos se llena según destinoTipo)
             idCedis: form.destinoTipo === "cedis" ? destinoIdNum : null,
@@ -138,6 +240,10 @@ export const BotonSolicitud = () => {
         setIsSubmitting(true);
 
         try {
+            console.groupCollapsed("[Solicitud] Enviando payload");
+            console.log(payload);
+            console.groupEnd();
+
             const res = await fetch(`${API_BASE_URL}/api/solicitudes/crear`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -150,8 +256,12 @@ export const BotonSolicitud = () => {
                 : await res.text();
 
             if (!res.ok) {
-                const msg = typeof rawBody === "string" ? rawBody : (rawBody?.message || "Error creando accesorio");
-                throw new Error(msg);
+                const msg = toErrorMessage(rawBody) || "Solicitud inválida";
+                console.groupCollapsed(`[Solicitud] Error ${res.status} ${res.statusText}`);
+                console.log("Respuesta:", rawBody);
+                console.log("Payload:", payload);
+                console.groupEnd();
+                throw new Error(`(${res.status}) ${msg}`);
             }
 
             setSuccessMsg("Solicitud creada correctamente");
@@ -164,6 +274,9 @@ export const BotonSolicitud = () => {
                 impresora: "",
             });
             setSelectedAccesorioId("");
+            setSelectedPlantaId("");
+            setSelectedResuId("");
+            setSelectedTepId("");
             setOpen(false);
         } catch (err) {
             setErrorMsg(err?.message || "Error creando toner");
@@ -177,6 +290,18 @@ export const BotonSolicitud = () => {
             <button type="button" className="btn btn-outline-success"
                 onClick={handleOpen}>
                 Agregar una nueva solicitud</button>
+
+            {successMsg ? (
+                <div className="alert alert-success mt-3 d-flex justify-content-between align-items-center" role="alert">
+                    <div>{successMsg}</div>
+                    <button
+                        type="button"
+                        className="btn-close"
+                        aria-label="Cerrar"
+                        onClick={() => setSuccessMsg("")}
+                    />
+                </div>
+            ) : null}
 
             {open ? (
                 <div role="dialog" aria-modal="true" style={{
@@ -224,16 +349,18 @@ export const BotonSolicitud = () => {
                                 <label className="form-label">Ubicación (ID)</label>
                                 <select
                                     className="form-select"
-                                    name="destinoTipo"
-                                    value={form.destinoTipo}
+                                    name="destinoId"
+                                    value={form.destinoId}
                                     onChange={handleChange}
                                     required
+                                    disabled={!form.destinoTipo}
                                 >
-                                    <option value="">Selecciona a donde va el toner</option>
-                                    <option value="planta">1</option>
-                                    <option value="resu">1</option>
-                                    <option value="cedis">1</option>
-                                    <option value="tep">1</option>
+                                    <option value="">Seleccione una ubicación</option>
+                                    {destinoOptions.map((opt) => (
+                                        <option key={String(opt.id)} value={String(opt.id)}>
+                                            {String(opt.id)}{opt.label ? ` - ${opt.label}` : ""}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="mb-3">
@@ -261,31 +388,7 @@ export const BotonSolicitud = () => {
                                     readOnly
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label>Planta</label>
-                                <select
-                                    name="plantaId"
-                                    className="form-control"
-                                    required
-                                    value={selectedPlantaId}
-                                    onChange={(e) => {
-                                        const id = e.target.value;
-                                        setSelectedPlantaId(id);
-                                    }}
-                                >
-                                    <option value="">Seleccione una planta</option>
-                                    {plantas.map((planta) => (
-                                        <option key={planta.id} value={String(planta.id)}>{planta.nombrePlanta}</option>
-                                    ))}
-                                </select>
-                                {/* Enviamos también el nombre (como pide tu ejemplo del backend) */}
-                                <input
-                                    type="hidden"
-                                    name="nombrePlanta"
-                                    value={selectedPlantaId ? (plantas.find((p) => String(p?.id) === String(selectedPlantaId))?.nombrePlanta ?? "") : ""}
-                                    readOnly
-                                />
-                            </div>
+                            
                             <div className="mb-3">
                                 <label className="form-label">Cantidad</label>
                                 <input
@@ -311,13 +414,19 @@ export const BotonSolicitud = () => {
 
                             <div className="mb-3">
                                 <label className="form-label">Impresora</label>
-                                <input
-                                    className="form-control"
+                                <select
+                                    className="form-select"
                                     name="impresora"
                                     value={form.impresora}
                                     onChange={handleChange}
-                                    placeholder="Impresora"
-                                />
+                                >
+                                    <option value="">Seleccione una impresora (opcional)</option>
+                                    {impresoraOptions.map((opt) => (
+                                        <option key={String(opt.id)} value={String(opt.id)}>
+                                            {String(opt.id)}{opt.label ? ` - ${opt.label}` : ""}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                                 <button type="button" className="btn btn-outline-danger" onClick={handleClose}>
@@ -336,3 +445,5 @@ export const BotonSolicitud = () => {
 }
 
 export default BotonSolicitud;
+
+
