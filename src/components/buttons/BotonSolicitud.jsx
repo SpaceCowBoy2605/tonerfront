@@ -1,6 +1,134 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../../style/solicitud.css";
 
+const getTodayISODate = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const getImpresoraDestinoId = (impresora, destinoTipo) => {
+    if (!impresora || !destinoTipo) return null;
+
+    const pick = (...vals) => {
+        for (const v of vals) {
+            if (v !== undefined && v !== null && String(v) !== "") return v;
+        }
+        return null;
+    };
+
+    switch (destinoTipo) {
+        case "planta":
+            return pick(
+                impresora?.idPlanta,
+                impresora?.plantaId,
+                impresora?.id_planta,
+                impresora?.planta?.id,
+            );
+        case "resu":
+            return pick(
+                impresora?.idResu,
+                impresora?.resuId,
+                impresora?.id_resu,
+                impresora?.idResurreccion,
+                impresora?.resurreccionId,
+                impresora?.resu?.id,
+                impresora?.resurreccion?.id,
+            );
+        case "cedis":
+            return pick(
+                impresora?.idCedis,
+                impresora?.cedisId,
+                impresora?.id_cedis,
+                impresora?.cedis?.id,
+            );
+        case "tep":
+            return pick(
+                impresora?.idTep,
+                impresora?.tepId,
+                impresora?.id_tep,
+                impresora?.tep?.id,
+            );
+        default:
+            return null;
+    }
+};
+
+const getImpresoraId = (impresora) => {
+    return impresora?.id ?? impresora?.idImpresora ?? impresora?.impresoraId ?? null;
+};
+
+const getImpresoraAccesorioIds = (impresora) => {
+    if (!impresora) return [];
+
+    const ids = new Set();
+    const push = (v) => {
+        if (v === undefined || v === null) return;
+        const s = String(v).trim();
+        if (!s) return;
+        ids.add(s);
+    };
+
+    // Variantes comunes: directo o anidado
+    push(impresora?.idAccesorio);
+    push(impresora?.accesorioId);
+    push(impresora?.idAcc);
+    push(impresora?.idToner);
+    push(impresora?.tonerId);
+    push(impresora?.accesorio?.id);
+    push(impresora?.toner?.id);
+
+    // Si viene como arreglo
+    const arr =
+        impresora?.accesorios ||
+        impresora?.toners ||
+        impresora?.accesorioIds ||
+        impresora?.tonerIds ||
+        [];
+    if (Array.isArray(arr)) {
+        arr.forEach((item) => push(item?.id ?? item?.accesorioId ?? item?.idAccesorio ?? item));
+    }
+
+    return Array.from(ids);
+};
+
+const getAccesorioId = (accesorio) => {
+    return accesorio?.id ?? accesorio?.idAccesorio ?? accesorio?.accesorioId ?? null;
+};
+
+const getAccesorioImpresoraIds = (accesorio) => {
+    if (!accesorio) return [];
+
+    const ids = new Set();
+    const push = (v) => {
+        if (v === undefined || v === null) return;
+        const s = String(v).trim();
+        if (!s) return;
+        ids.add(s);
+    };
+
+    // Variantes comunes: el accesorio apunta a una impresora
+    push(accesorio?.idImpresora);
+    push(accesorio?.impresoraId);
+    push(accesorio?.id_impresora);
+    push(accesorio?.impresora?.id);
+
+    // O viene como lista de impresoras compatibles
+    const arr =
+        accesorio?.impresoras ||
+        accesorio?.impresorasCompatibles ||
+        accesorio?.compatibles ||
+        accesorio?.impresoraIds ||
+        [];
+    if (Array.isArray(arr)) {
+        arr.forEach((item) => push(item?.id ?? item?.idImpresora ?? item?.impresoraId ?? item));
+    }
+
+    return Array.from(ids);
+};
+
 export const BotonSolicitud = () => {
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000";
@@ -26,13 +154,21 @@ export const BotonSolicitud = () => {
         destinoTipo: "",
         destinoId: "",
         cantidad: 1,
-        fechaSolicitud: "",
+        fechaSolicitud: getTodayISODate(),
         impresora: "",
     });
 
     const handleOpen = () => {
         setSuccessMsg("");
         setErrorMsg("");
+        setSelectedAccesorioId("");
+        setForm({
+            destinoTipo: "",
+            destinoId: "",
+            cantidad: 1,
+            fechaSolicitud: getTodayISODate(),
+            impresora: "",
+        });
         setOpen(true);
     };
 
@@ -44,7 +180,20 @@ export const BotonSolicitud = () => {
         const { name, value } = e.target;
         // Si cambia el tipo de destino, limpiamos el id seleccionado para evitar inconsistencias.
         if (name === "destinoTipo") {
-            setForm((prev) => ({ ...prev, destinoTipo: value, destinoId: "" }));
+            setSelectedAccesorioId("");
+            setForm((prev) => ({ ...prev, destinoTipo: value, destinoId: "", impresora: "" }));
+            return;
+        }
+        // Si cambia la ubicación, limpiamos impresora para que no quede una de otro destino.
+        if (name === "destinoId") {
+            setSelectedAccesorioId("");
+            setForm((prev) => ({ ...prev, destinoId: value, impresora: "" }));
+            return;
+        }
+        if (name === "impresora") {
+            // Al cambiar impresora, se debe re-elegir toner/accesorio compatible.
+            setSelectedAccesorioId("");
+            setForm((prev) => ({ ...prev, impresora: value }));
             return;
         }
         setForm((prev) => ({ ...prev, [name]: value }));
@@ -148,8 +297,82 @@ export const BotonSolicitud = () => {
             .catch(() => setImpresoras([]))
     }, [API_BASE_URL])
 
+    const impresorasFiltradas = useMemo(() => {
+        const destinoTipo = form.destinoTipo;
+        const destinoId = form.destinoId;
+
+        if (!destinoTipo || !destinoId) return impresoras || [];
+
+        const destinoIdStr = String(destinoId);
+        return (impresoras || []).filter((impresora) => {
+            const id = getImpresoraDestinoId(impresora, destinoTipo);
+            return id !== null && String(id) === destinoIdStr;
+        });
+    }, [form.destinoId, form.destinoTipo, impresoras]);
+
+    const impresoraSeleccionada = useMemo(() => {
+        if (!form.impresora) return null;
+        const selectedId = String(form.impresora);
+        return (impresorasFiltradas || []).find((i) => {
+            const id = getImpresoraId(i);
+            return id !== null && String(id) === selectedId;
+        }) ?? null;
+    }, [form.impresora, impresorasFiltradas]);
+
+    const accesoriosFiltrados = useMemo(() => {
+        if (!form.impresora) return accesorios || [];
+
+        const impresoraIdStr = String(form.impresora);
+        const idsPorImpresora = getImpresoraAccesorioIds(impresoraSeleccionada);
+
+        // 1) Preferir relación impresora -> accesorio (más común cuando la impresora tiene “su” toner)
+        if (idsPorImpresora.length > 0) {
+            const allowed = new Set(idsPorImpresora);
+            return (accesorios || []).filter((a) => {
+                const id = getAccesorioId(a);
+                return id !== null && allowed.has(String(id));
+            });
+        }
+
+        // 2) Fallback: accesorio -> impresora (cuando el accesorio define sus impresoras compatibles)
+        const filtrados = (accesorios || []).filter((a) => {
+            const ids = getAccesorioImpresoraIds(a);
+            return ids.includes(impresoraIdStr);
+        });
+
+        // Si no hay forma de relacionar (ningún accesorio trae info), no bloqueamos al usuario.
+        const hayRelacionEnAlguno = (accesorios || []).some((a) => getAccesorioImpresoraIds(a).length > 0);
+        if (!hayRelacionEnAlguno) return accesorios || [];
+
+        return filtrados;
+    }, [accesorios, form.impresora, impresoraSeleccionada]);
+
+    useEffect(() => {
+        if (!selectedAccesorioId) return;
+        const selectedId = String(selectedAccesorioId);
+        const exists = (accesoriosFiltrados || []).some((a) => {
+            const id = getAccesorioId(a);
+            return id !== null && String(id) === selectedId;
+        });
+        if (!exists) {
+            setSelectedAccesorioId("");
+        }
+    }, [accesoriosFiltrados, selectedAccesorioId]);
+
+    useEffect(() => {
+        if (!form.impresora) return;
+        const selectedId = String(form.impresora);
+        const exists = (impresorasFiltradas || []).some((i) => {
+            const id = i?.id ?? i?.idImpresora ?? i?.impresoraId;
+            return id !== undefined && id !== null && String(id) === selectedId;
+        });
+        if (!exists) {
+            setForm((prev) => ({ ...prev, impresora: "" }));
+        }
+    }, [form.impresora, impresorasFiltradas]);
+
     const impresoraOptions = useMemo(() => {
-        return (impresoras || [])
+        return (impresorasFiltradas || [])
             .map((i) => {
                 const id = i?.id ?? i?.idImpresora ?? i?.impresoraId
                 const nombre = i?.nombreImpresora ?? i?.nombre ?? i?.marca ?? ""
@@ -161,7 +384,32 @@ export const BotonSolicitud = () => {
                 }
             })
             .filter((opt) => opt.id !== undefined && opt.id !== null)
-    }, [impresoras])
+    }, [impresorasFiltradas])
+
+    useEffect(() => {
+        // Autollenado: si destino+ubicación dejan solo 1 impresora, selecciónala.
+        if (!form.destinoTipo || !form.destinoId) return;
+        if (form.impresora) return;
+        if (!Array.isArray(impresoraOptions)) return;
+        if (impresoraOptions.length !== 1) return;
+
+        const only = impresoraOptions[0];
+        if (only?.id === undefined || only?.id === null) return;
+        setForm((prev) => ({ ...prev, impresora: String(only.id) }));
+    }, [form.destinoId, form.destinoTipo, form.impresora, impresoraOptions]);
+
+    useEffect(() => {
+        // Autollenado: si una impresora deja solo 1 accesorio/toner compatible, selecciónalo.
+        if (!form.impresora) return;
+        if (selectedAccesorioId) return;
+        if (!Array.isArray(accesoriosFiltrados)) return;
+        if (accesoriosFiltrados.length !== 1) return;
+
+        const only = accesoriosFiltrados[0];
+        const onlyId = getAccesorioId(only);
+        if (onlyId === null) return;
+        setSelectedAccesorioId(String(onlyId));
+    }, [accesoriosFiltrados, form.impresora, selectedAccesorioId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -198,7 +446,7 @@ export const BotonSolicitud = () => {
             setErrorMsg("La cantidad debe ser mayor a 0");
             return;
         }
-        
+
 
         const payload = {
             // toner / accesorio
@@ -270,7 +518,7 @@ export const BotonSolicitud = () => {
                 destinoTipo: "",
                 destinoId: "",
                 cantidad: 1,
-                fechaSolicitud: "",
+                fechaSolicitud: getTodayISODate(),
                 impresora: "",
             });
             setSelectedAccesorioId("");
@@ -364,6 +612,22 @@ export const BotonSolicitud = () => {
                                 </select>
                             </div>
                             <div className="mb-3">
+                                <label className="form-label">Impresora</label>
+                                <select
+                                    className="form-select"
+                                    name="impresora"
+                                    value={form.impresora}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Seleccione una impresora (opcional)</option>
+                                    {impresoraOptions.map((opt) => (
+                                        <option key={String(opt.id)} value={String(opt.id)}>
+                                            {String(opt.id)}{opt.label ? ` - ${opt.label}` : ""}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="mb-3">
                                 <label>Nombre accesorio</label>
                                 <select
                                     name="accesorioId"
@@ -376,7 +640,7 @@ export const BotonSolicitud = () => {
                                     }}
                                 >
                                     <option value="">Seleccione un accesorio</option>
-                                    {accesorios.map((accesorio) => (
+                                    {accesoriosFiltrados.map((accesorio) => (
                                         <option key={accesorio.id} value={String(accesorio.id)}>{accesorio.nombreAccesorio}</option>
                                     ))}
                                 </select>
@@ -388,7 +652,7 @@ export const BotonSolicitud = () => {
                                     readOnly
                                 />
                             </div>
-                            
+
                             <div className="mb-3">
                                 <label className="form-label">Cantidad</label>
                                 <input
@@ -409,24 +673,6 @@ export const BotonSolicitud = () => {
                                     onChange={handleChange}
                                     placeholder="Ej: Sistemas, Administración..."
                                 />
-                            </div>
-
-
-                            <div className="mb-3">
-                                <label className="form-label">Impresora</label>
-                                <select
-                                    className="form-select"
-                                    name="impresora"
-                                    value={form.impresora}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Seleccione una impresora (opcional)</option>
-                                    {impresoraOptions.map((opt) => (
-                                        <option key={String(opt.id)} value={String(opt.id)}>
-                                            {String(opt.id)}{opt.label ? ` - ${opt.label}` : ""}
-                                        </option>
-                                    ))}
-                                </select>
                             </div>
                             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                                 <button type="button" className="btn btn-outline-danger" onClick={handleClose}>
