@@ -3,6 +3,7 @@ import m1120 from '../../assets/impresoras/epson_M1120.jpg';
 import HPm111w from '../../assets/impresoras/HP_LaserJet_M111w.webp';
 import HP107W from '../../assets/impresoras/hp107w.avif';
 import p1606n from '../../assets/impresoras/hpp1606.jpg';
+import ECOSYS_1060 from '../../assets/impresoras/ECOSYS_1060dn.png';
 
 
 export const Imagenesimpresora = {
@@ -10,5 +11,7 @@ export const Imagenesimpresora = {
     HP107W, 
     m1120,
     p1606n,
-    HPm111w
+    HPm111w,
+    ECOSYS_1060
+
 }

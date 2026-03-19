@@ -10,7 +10,7 @@ export const NavImpresora  = () => {
                 <Link to="" className="nav-link">Impresoras de planta</Link>
             </li>
             <li className="nav-item">
-                <Link to="" className="nav-link">Impresoras de Resureccion</Link>
+                <Link to="" className="nav-link">Agregar nuevas impresoras</Link>
             </li>
             <li className="nav-item">
                 <Link to="" className="nav-link">Impresoras de la TEP</Link>

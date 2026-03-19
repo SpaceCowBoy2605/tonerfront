@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Nav from '../components/navs/navsToner.jsx'
 import Boton from '../components/buttons/Boton.jsx'
 import BotonCancelar from '../components/buttons/BotonCancelar.jsx'
@@ -14,6 +14,46 @@ export default function ActualizarToners() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [ultimoCreado, setUltimoCreado] = useState(null)
     const [selectedAccesorioId, setSelectedAccesorioId] = useState("")
+    const [cantidadAgregar, setCantidadAgregar] = useState("")
+
+    const UMBRAL_SUFICIENTE = 6;
+    const UMBRAL_BAJO = 3;
+
+    const computeEstatusId = (totalCantidad) => {
+        const total = Number(totalCantidad);
+        if (!Number.isFinite(total)) return "";
+        if (total >= UMBRAL_SUFICIENTE) return 1;
+        if (total >= UMBRAL_BAJO) return 2;
+        return 3;
+    };
+
+    const selectedAccesorio = useMemo(() => {
+        if (!selectedAccesorioId) return null;
+        return (accesorios || []).find((a) => String(a?.id) === String(selectedAccesorioId)) ?? null;
+    }, [accesorios, selectedAccesorioId]);
+
+    const cantidadExistente = useMemo(() => {
+        const raw = selectedAccesorio?.cantidad;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : 0;
+    }, [selectedAccesorio]);
+
+    const cantidadAgregarNumero = useMemo(() => {
+        if (cantidadAgregar === "" || cantidadAgregar === null || cantidadAgregar === undefined) return NaN;
+        const n = Number(cantidadAgregar);
+        return Number.isFinite(n) ? n : NaN;
+    }, [cantidadAgregar]);
+
+    const cantidadTotal = useMemo(() => {
+        if (!Number.isFinite(cantidadAgregarNumero)) return NaN;
+        return cantidadExistente + cantidadAgregarNumero;
+    }, [cantidadExistente, cantidadAgregarNumero]);
+
+    const idEstatusAuto = useMemo(() => {
+        if (!selectedAccesorioId) return "";
+        if (!Number.isFinite(cantidadAgregarNumero)) return "";
+        return computeEstatusId(cantidadTotal);
+    }, [cantidadAgregarNumero, cantidadTotal, selectedAccesorioId]);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/api/accesorio`)
@@ -42,11 +82,28 @@ export default function ActualizarToners() {
             return;
         }
 
+        const cantidadAAgregar = Number(formData.get("cantidad"));
+        const cantidadTotalSubmit = (Number.isFinite(cantidadAAgregar) ? cantidadAAgregar : 0) + cantidadExistente;
+        const idEstatusSubmit = computeEstatusId(cantidadTotalSubmit);
+
+        if (!Number.isFinite(cantidadAAgregar) || cantidadAAgregar <= 0) {
+            setErrorMsg("Ingrese una cantidad válida");
+            return;
+        }
+
+        if (!idEstatusSubmit) {
+            setErrorMsg("No se pudo calcular el estatus");
+            return;
+        }
+
         const payload = {
-            cantidad: Number(formData.get("cantidad")),
+            // En este endpoint, el backend suele SUMAR a existencias.
+            // Mandamos únicamente la cantidad a agregar para evitar doble suma.
+            cantidad: cantidadAAgregar,
             entrada: String(formData.get("entrada") || ""),
             nombreAccesorio,
-            idEstatus: Number(formData.get("idEstatus")),
+            // El estatus se calcula con el total esperado (existente + agregar).
+            idEstatus: idEstatusSubmit,
         };
 
         setErrorMsg("");
@@ -77,12 +134,13 @@ export default function ActualizarToners() {
                 : null;
 
             setSuccessMsg("Accesorio actualizado correctamente");
-            const mergedUpdated = updatedFromApi ?? { id: accesorioId, ...payload };
+            const mergedUpdated = updatedFromApi ?? { id: accesorioId, ...payload, cantidad: cantidadTotalSubmit };
             setAccesorios((prev) => prev.map((a) => String(a?.id) === String(accesorioId) ? { ...a, ...mergedUpdated } : a));
             setUltimoCreado(mergedUpdated);
 
             formEl.reset();
             setSelectedAccesorioId("");
+            setCantidadAgregar("");
         } catch (err) {
             setErrorMsg(err?.message || "Error actualizando toner");
         } finally {
@@ -111,6 +169,7 @@ export default function ActualizarToners() {
                                     onChange={(e) => {
                                         const id = e.target.value;
                                         setSelectedAccesorioId(id);
+                                        setCantidadAgregar("");
                                     }}
                                 >
                                     <option value="">Seleccione un accesorio</option>
@@ -127,16 +186,31 @@ export default function ActualizarToners() {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Cantidad</label>
-                                <input name="cantidad" type="number" className="form-control" required />
+                                <label>Cantidad a agregar</label>
+                                <input
+                                    name="cantidad"
+                                    type="number"
+                                    className="form-control"
+                                    min="1"
+                                    required
+                                    value={cantidadAgregar}
+                                    onChange={(e) => setCantidadAgregar(e.target.value)}
+                                />
                             </div>
                             <div className="form-group">
                                 <label>Fecha de agregado</label>
                                 <input name="entrada" type="date" className="form-control" required />
                             </div>
                             <div className="form-group">
-                                <label>Estatus</label>
-                                <input name="idEstatus" type="number" className="form-control" required />
+                                <label>Estatus (automático)</label>
+                                <input
+                                    name="idEstatus"
+                                    type="number"
+                                    className="form-control"
+                                    required
+                                    readOnly
+                                    value={idEstatusAuto}
+                                />
                             </div>
                             <div className="button-group">
                                 <Boton disabled={isSubmitting}>{isSubmitting ? "Actualizando..." : "Actualizar"}</Boton>
@@ -146,6 +220,7 @@ export default function ActualizarToners() {
                                         setSuccessMsg("");
                                         setUltimoCreado(null);
                                         setSelectedAccesorioId("");
+                                        setCantidadAgregar("");
                                     }}
                                 />
                             </div>
